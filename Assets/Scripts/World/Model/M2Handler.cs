@@ -52,7 +52,7 @@ namespace World.Model
             meshRenderer.sharedMesh = mesh;
             
             var materials = new Material[model.Submeshes.Count];
-            Parallel.For(0, model.Submeshes.Count, i =>
+            for (var i = 0; i < model.Submeshes.Count; ++i)
             {
                 mesh.SetTriangles(model.Submeshes[i].Triangles, i, true);
                 materials[i] = new Material(Shader.Find("WowModelViewer/WMO/S_Diffuse"));
@@ -74,7 +74,7 @@ namespace World.Model
                     
                     materials[i].SetTexture("_MainTex", activeTextures[textureFileDataId]);
                 }
-            });
+            }
             meshRenderer.materials = materials;
 
             if (GuiConstants.IsInModelPreview)

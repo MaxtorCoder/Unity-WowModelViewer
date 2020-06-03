@@ -62,10 +62,10 @@ namespace IO.ADT
                 switch (chunkId)
                 {
                     case Chunks.MCVT:        // Vertex Heights
-                        mcnk.VertexHeights = ReadMCVT(reader);
+                        mcnk.Vertices = ReadMCVT(reader);
                         break;
                     case Chunks.MCNR:        // Normals
-                        mcnk.VertexNormals = ReadMCNR(reader);
+                        mcnk.Normals = ReadMCNR(reader);
                         break;
                     default:
                         reader.Skip(chunkSize);

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Assets.Scripts.IO.ADT.MapTextures;
 using Casc;
 using Constants;
 using UnityEngine;
@@ -96,14 +95,6 @@ namespace IO.ADT
 
                 model.TerrainHeightTextures.Add(textureFileDataId, textureData);
             }
-        }
-
-        /// <summary>
-        /// Load all lower textures.
-        /// </summary>
-        public static void LoadLowTextures()
-        {
-
         }
     }
 }

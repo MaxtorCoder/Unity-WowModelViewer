@@ -41,8 +41,8 @@ namespace IO.ADT
         public ushort HolesLowRes;
         public Vector3 MeshPosition;
 
-        public float[] VertexHeights;
-        public Vector3[] VertexNormals;
+        public float[] Vertices;
+        public Vector3[] Normals;
         public Vector3[] VertexArray;
         public int[] TriangleArray;
         public Vector2[] UVs;

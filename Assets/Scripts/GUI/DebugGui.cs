@@ -12,7 +12,7 @@ namespace GUI
         
         public void Start()
         {
-            LoadM2.onClick.AddListener(delegate { LoadModel(LoadType.M2, 3605056); });
+            LoadM2.onClick.AddListener(delegate { LoadModel(LoadType.M2, 197394); });
             LoadADT.onClick.AddListener(delegate { LoadModel(LoadType.ADT, 0); });
         }
         

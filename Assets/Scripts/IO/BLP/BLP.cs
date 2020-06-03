@@ -102,6 +102,9 @@ public class BLP
 
     public static TextureData Open(uint fileDataId)
     {
+        if (fileDataId == 0)
+            return null;
+
         var stream = CASC.OpenFile(fileDataId);
         if (stream == null)
             return null;
