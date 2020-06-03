@@ -22,6 +22,11 @@ namespace Util
         }
 
         public static uint Flip(this uint n) => (n << 24) | (((n >> 16) << 24) >> 16) | (((n << 16) >> 24) << 16) | (n >> 24);
+        
+        public static float NormalizeValue(this BinaryReader reader, float value)
+        {
+            return 2 * (value / 254) - 1;
+        }
         #endregion
         
         #region Unity Editor Extensions
@@ -36,6 +41,21 @@ namespace Util
 
             return default;
         }
+        #endregion
+        
+        #region Misc Extensions
+
+        public static float NormalizeFloat(this float value)
+        {
+            var calcVal = value;
+            if (calcVal <= 0)
+                calcVal += 1;
+            else if (calcVal > 0)
+                calcVal = (1 - calcVal) * -1;
+
+            return calcVal;
+        }
+        
         #endregion
     }
 }

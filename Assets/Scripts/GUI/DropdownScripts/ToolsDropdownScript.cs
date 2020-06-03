@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Interfaces;
 using UnityEngine;
+using Util;
 
 namespace GUI.DropdownScripts
 {
@@ -9,7 +10,13 @@ namespace GUI.DropdownScripts
     {
         public ToolsDropdownScript(GameObject ui) : base(ui)
         {
-            
+            Events.Add("OpenMapImport", OpenMapImport);
+        }
+
+        private void OpenMapImport()
+        {
+            var mapImport = UI.FindObject("MapImport");
+            mapImport.SetActive(!mapImport.activeSelf);
         }
     }
 }

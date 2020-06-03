@@ -8,7 +8,7 @@ using Util;
 
 namespace GUI
 {
-    public class MainGUI : MonoBehaviour
+    public class MainGui : MonoBehaviour
     {
         private GameObject activeDropdown;
         public GameObject ToolBar;

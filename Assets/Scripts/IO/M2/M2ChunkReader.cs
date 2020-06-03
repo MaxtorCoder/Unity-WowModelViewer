@@ -103,26 +103,14 @@ namespace IO.M2
                 if (!TextureFileIds.Contains(fileDataId))
                 {
                     var m2Texture = new M2Texture();
-                    var textureData = new TextureData();
-                    
-                    using (var blpStream = CASC.OpenFile(fileDataId))
-                    {
-                        var blp = new BLP();
-                        var blpData = blp.GetUncompressed(blpStream);
-                        var blpInfo = blp.GetInfo();
+                    var textureData = BLP.Open(fileDataId);
+                    if (textureData == null)
+                        continue;
 
-                        textureData.HasMipmaps = blpInfo.hasMipmaps;
-                        textureData.Width = blpInfo.width;
-                        textureData.Height = blpInfo.height;
-                        textureData.RawData = blpData;
-                        textureData.TextureFormat = blpInfo.textureFormat;
-
-                        m2Texture.TextureData = textureData;
-                        m2Texture.FileDataId = fileDataId;
-                        
-                        TextureFileIds.Add(fileDataId);
-                    }
+                    m2Texture.FileDataId = fileDataId;
+                    m2Texture.TextureData = textureData;
                     
+                    TextureFileIds.Add(fileDataId);
                     model.Textures.Add(m2Texture);
                 }
             }

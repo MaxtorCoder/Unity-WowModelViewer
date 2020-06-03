@@ -3,13 +3,19 @@ using Newtonsoft.Json;
 using Settings;
 using UnityEngine;
 using World.Model;
+using World.Terrain;
 
 namespace World
 {
     public class WorldLoader : MonoBehaviour
     {
         private M2Handler m2Handler;
-        
+        private ADTHandler adtHandler;
+
+        public GameObject ChunkPrefab;
+        public Material HeightMaterial;
+        public Shader TerrainLowShader;
+
         public void Start()
         {
             // Initialize settings.
@@ -17,11 +23,15 @@ namespace World
 
             var m2Parent = GameObject.Find("M2");
             m2Handler = new M2Handler(m2Parent);
+            
+            var adtParent = GameObject.Find("ADT");
+            adtHandler = new ADTHandler(adtParent, ChunkPrefab, HeightMaterial, TerrainLowShader);
         }
 
         public void Update()
         {
             m2Handler?.Update();
+            adtHandler?.Update();
         }
 
         private void InitializeSettings()

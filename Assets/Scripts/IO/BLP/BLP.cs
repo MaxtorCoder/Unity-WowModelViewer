@@ -2,6 +2,8 @@
 using System.IO;
 using System;
 using System.Collections.Generic;
+using Casc;
+using IO.Shared;
 
 public class BLPinfo
 {
@@ -96,6 +98,29 @@ public class BLP
         while (mipmapOffsets[i] != 0) i++;
         MipMapCount = i;
         return MipMapCount;
+    }
+
+    public static TextureData Open(uint fileDataId)
+    {
+        var stream = CASC.OpenFile(fileDataId);
+        if (stream == null)
+            return null;
+
+        var textureData = new TextureData();
+        var blp = new BLP();
+        var blpData = blp.GetUncompressed(stream, true);
+        var blpInfo = blp.GetInfo();
+
+        textureData.HasMipmaps = blpInfo.hasMipmaps;
+        textureData.Width = blpInfo.width;
+        textureData.Height = blpInfo.height;
+        textureData.RawData = blpData;
+        textureData.TextureFormat = blpInfo.textureFormat;
+
+        if (textureData.Width != textureData.Height)
+            textureData.HasMipmaps = false;
+
+        return textureData;
     }
 
     public byte[] GetUncompressed(Stream stream, bool mipmaps = true)
@@ -194,28 +219,28 @@ public class BLP
     }
 
     private byte[] GetImageBytes(int mipmapLevel)
-	{
-		switch (encoding)
-		{
-			case 1:
+    {
+        switch (encoding)
+        {
+            case 1:
                 byte[] data = new byte[mipmapSize[mipmapLevel]];
-				str.Position = mipmapOffsets[mipmapLevel];
-				str.Read(data, 0, data.Length);
-				return ExtractPalettizedImageData((int)(width/Mathf.Pow(2, mipmapLevel)), (int)(height/Mathf.Pow(2, mipmapLevel)), data);
-			case 2:
-				byte[] data0 = new byte[mipmapSize[mipmapLevel]];
-				str.Position = mipmapOffsets[mipmapLevel];
-				str.Read(data0, 0, data0.Length);
-				return data0;
-			case 3:
-				byte[] data1 = new byte[mipmapSize[mipmapLevel]];
-				str.Position = mipmapOffsets[mipmapLevel];
-				str.Read(data1, 0, data1.Length);
-				return data1;
-			default:
-				return new byte[0];
-		}
-	}
+                str.Position = mipmapOffsets[mipmapLevel];
+                str.Read(data, 0, data.Length);
+                return ExtractPalettizedImageData((int)(width / Mathf.Pow(2, mipmapLevel)), (int)(height / Mathf.Pow(2, mipmapLevel)), data);
+            case 2:
+                byte[] data0 = new byte[mipmapSize[mipmapLevel]];
+                str.Position = mipmapOffsets[mipmapLevel];
+                str.Read(data0, 0, data0.Length);
+                return data0;
+            case 3:
+                byte[] data1 = new byte[mipmapSize[mipmapLevel]];
+                str.Position = mipmapOffsets[mipmapLevel];
+                str.Read(data1, 0, data1.Length);
+                return data1;
+            default:
+                return new byte[0];
+        }
+    }
 
     private byte[] ExtractPalettizedImageData (int w, int h, byte[] data)
     {
@@ -252,27 +277,5 @@ public class BLP
     {
         str.Close();
         str = null;
-    }
-
-    private string ReadFourCCReverse(Stream stream) // 4 byte to 4 chars
-    {
-        string str = "";
-        for (int i = 1; i <= 4; i++)
-        {
-            int b = stream.ReadByte();
-            try
-            {
-                var s = System.Convert.ToChar(b);
-                if (s != '\0')
-                {
-                    str = str + s;
-                }
-            }
-            catch
-            {
-                Debug.Log("Couldn't convert Byte to Char: " + b);
-            }
-        }
-        return str;
     }
 }
