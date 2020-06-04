@@ -6,7 +6,6 @@ using Settings;
 using SFB;
 using UnityEngine;
 using UnityEngine.UI;
-using Util;
 using Button = UnityEngine.UI.Button;
 
 namespace GUI
@@ -38,7 +37,7 @@ namespace GUI
 
             if (config.LocalStorage != string.Empty && File.Exists($"{config.LocalStorage}/.build.info"))
             {
-                var localBranches = Utilities.GetLocalBranch($"{config.LocalStorage}/.build.info");
+                var localBranches = Util.Utilities.GetLocalBranch($"{config.LocalStorage}/.build.info");
                 foreach (var branch in localBranches)
                     LocalBranch.options.Add(new Dropdown.OptionData(branch));
 
@@ -83,7 +82,7 @@ namespace GUI
                     Debug.Log("Invalid WoW Folder!");
                 }
 
-                var localBranches = Utilities.GetLocalBranch($"{path}/.build.info");
+                var localBranches = Util.Utilities.GetLocalBranch($"{path}/.build.info");
                 foreach (var branch in localBranches)
                     LocalBranch.options.Add(new Dropdown.OptionData(branch));
 

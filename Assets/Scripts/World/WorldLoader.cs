@@ -13,8 +13,6 @@ namespace World
         private ADTHandler adtHandler;
 
         public GameObject ChunkPrefab;
-        public Material HeightMaterial;
-        public Shader TerrainLowShader;
 
         public void Start()
         {
@@ -25,7 +23,7 @@ namespace World
             m2Handler = new M2Handler(m2Parent);
             
             var adtParent = GameObject.Find("ADT");
-            adtHandler = new ADTHandler(adtParent, ChunkPrefab, HeightMaterial, TerrainLowShader);
+            adtHandler = new ADTHandler(adtParent, ChunkPrefab);
         }
 
         public void Update()

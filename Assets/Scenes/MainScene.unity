@@ -6027,7 +6027,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1156951432
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8589,8 +8589,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2125943339}
   m_HandleRect: {fileID: 2125943338}
   m_Direction: 2
-  m_Value: 1
-  m_Size: 1
+  m_Value: 0.50028306
+  m_Size: 0.9983794
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -9825,8 +9825,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ChunkPrefab: {fileID: 8191640533260261959, guid: 2ce5a8f1632235346b2dc0b18f33f173,
     type: 3}
-  HeightMaterial: {fileID: 2100000, guid: 008780c02aafe794fbb9835eaed4cfe1, type: 2}
-  TerrainLowShader: {fileID: 4800000, guid: fe1d6b04220ffe64daf3b5c9f4b4b442, type: 3}
 --- !u!4 &2043404045
 Transform:
   m_ObjectHideFlags: 0
@@ -10251,8 +10249,8 @@ RectTransform:
   m_Father: {fileID: 827203450}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 0.0008107541}
+  m_AnchorMax: {x: 1, y: 0.99919015}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}

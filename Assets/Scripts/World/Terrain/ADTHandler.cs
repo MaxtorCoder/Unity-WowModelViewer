@@ -11,18 +11,14 @@ namespace World.Terrain
     {
         private GameObject adtParent;
         private GameObject chunkPrefab;
-        private Material heightMaterial;
-        private Shader shaderTerrainLow;
 
         private Dictionary<uint, Texture2D> activeDiffuseTextures = new Dictionary<uint, Texture2D>();
         private Dictionary<uint, Texture2D> activeHeightTextures = new Dictionary<uint, Texture2D>();
 
-        public ADTHandler(GameObject adtParent, GameObject chunkPrefab, Material heightMaterial, Shader shaderTerrainLow)
+        public ADTHandler(GameObject adtParent, GameObject chunkPrefab)
         {
             this.chunkPrefab = chunkPrefab;
             this.adtParent = adtParent;
-            this.heightMaterial = heightMaterial;
-            this.shaderTerrainLow = shaderTerrainLow;
         }
 
         public void Update()
@@ -88,16 +84,9 @@ namespace World.Terrain
 
                             verticeList.Add(verticeVector);
 
-                            double ofs = j;
-                            if (isSmallRow)
-                                ofs += 0.5;
-
-                            var tx = ofs / 8d;
-                            var ty = 1 - (i / 16d);
-
-                            // var texX = -(verticeVector.x - initialChunkY) / WorldConstants.TileSize;
-                            // var texY = (verticeVector.z - initialChunkX) / WorldConstants.TileSize;
-                            uvList.Add(new Vector2((float)tx, (float)ty));
+                            var texX = -(verticeVector.x - initialChunkY) / WorldConstants.TileSize;
+                            var texY = -(verticeVector.z - initialChunkX) / WorldConstants.TileSize;
+                            uvList.Add(new Vector2(texX, texY));
                         }
                     }
 
@@ -156,18 +145,15 @@ namespace World.Terrain
             mainChunk.GetComponent<MeshCollider>().sharedMesh = mainMesh;
 
             var lowTexture = new Texture2D(mapBlock.Data.Width, mapBlock.Data.Height, mapBlock.Data.TextureFormat, false);
-            lowTexture.wrapMode = TextureWrapMode.Clamp;
             lowTexture.LoadRawTextureData(mapBlock.Data.RawData);
-            lowTexture.mipMapBias = 0.5f;
             lowTexture.Apply();
+            lowTexture.wrapMode = TextureWrapMode.Clamp;
 
-            var lowMaterial = new Material(shaderTerrainLow);
-            lowMaterial.SetTexture("_MainTex2", lowTexture);
-            lowMaterial.SetTextureScale("_MainTex2", Vector2.one);
-            lowMaterial.enableInstancing = true;
+            var lowMaterial = new Material(Shader.Find("Shader Graphs/WowShader"));
+            lowMaterial.SetTexture("_layer0", lowTexture);
 
             if (model.X == mapBlock.Coords.x && model.Y == mapBlock.Coords.y)
-                mainChunk.GetComponent<Renderer>().material = lowMaterial;
+                mainChunk.GetComponent<MeshRenderer>().material = lowMaterial;
         }
     }
 }
