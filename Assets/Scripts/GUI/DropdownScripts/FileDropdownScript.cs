@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Casc;
+﻿using Casc;
 using Interfaces;
 using Settings;
 using UnityEngine;
@@ -18,7 +16,7 @@ namespace GUI.DropdownScripts
         private void OpenCasc()
         {
             LoadingScreen.SetActive(true);
-            
+
             CASC.Initialize(SettingsManager<ModelViewerConfig>.Config, LoadingScreen);
         }
 

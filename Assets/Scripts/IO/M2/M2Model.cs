@@ -8,11 +8,14 @@ namespace IO.M2
     public static class M2Data
     {
         public static ConcurrentQueue<M2Model> EnqueuedModels = new ConcurrentQueue<M2Model>();
+        public static ConcurrentQueue<M2Model> EnqueuedCloneModels = new ConcurrentQueue<M2Model>();
     }
     
     public class M2Model
     {
         public uint FileDataId;
+        public int UniqueId;
+
         public string ModelName;
         public Vector3 Position;
         public Quaternion Rotation;
@@ -24,6 +27,8 @@ namespace IO.M2
         public List<M2Texture> Textures = new List<M2Texture>();
 
         public List<ushort> TextureLookupTable = new List<ushort>();
+
+        public GameObject Parent = null;
     }
 
     public struct M2Submesh

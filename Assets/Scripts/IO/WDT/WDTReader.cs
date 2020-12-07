@@ -2,7 +2,6 @@
 using System.IO;
 using Casc;
 using Constants;
-using UnityEngine;
 using Util;
 
 namespace IO.WDT
@@ -29,8 +28,11 @@ namespace IO.WDT
 
                     switch (chunkId)
                     {
+                        case Chunks.MPHD:
+                            ReadMPHD(reader, fileDataId);
+                            break;
                         case Chunks.MAID:
-                            ReadMAID(reader);
+                            ReadMAID(reader, fileDataId);
                             break;
                         default:
                             reader.Skip(chunkSize);

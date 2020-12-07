@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Constants;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using Util;
 
@@ -19,6 +15,8 @@ namespace GUI
         // Start is called before the first frame update
         void Start()
         {
+            MainBackground.gameObject.SetActive(false);
+
             var allButtons = ToolBar.GetComponentsInChildren<Button>();
             foreach (var button in allButtons)
             {
@@ -27,7 +25,7 @@ namespace GUI
 
             var stateDropdown = GameObject.Find("StateDropdown").GetComponent<Dropdown>();
             stateDropdown.onValueChanged.AddListener(OnStateChanged);
-            stateDropdown.value = 0;
+            stateDropdown.value = 1;
         }
 
         private void ButtonClicked(string buttonName)
@@ -53,11 +51,9 @@ namespace GUI
             {
                 case 0:    // Model Viewer
                     MainBackground.gameObject.SetActive(true);
-                    GuiConstants.IsInModelPreview = true;
                     break;
                 case 1:    // Map Viewer
                     MainBackground.gameObject.SetActive(false);
-                    GuiConstants.IsInModelPreview = false;
                     break;
             }
         }

@@ -18,6 +18,13 @@
 
     public static class GuiConstants
     {
-        public static bool IsInModelPreview = true;
+        // public static bool IsInModelPreview = true;
+    }
+
+    public enum QueueItemType
+    {
+        AdtRoot = 0,
+        AdtTex = 1,
+        AdtObj = 2,
     }
 }

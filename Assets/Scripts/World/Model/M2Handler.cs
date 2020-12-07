@@ -1,33 +1,61 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Constants;
+﻿using System;
+using System.Collections.Generic;
 using IO.M2;
 using UnityEngine;
 
 namespace World.Model
 {
-    public class M2Handler
+    public class M2Handler : MonoBehaviour
     {
-        private GameObject m2Parent;
-        
+        public GameObject M2Parent;
+        public WorldLoader World;
+
         private Dictionary<uint, Texture2D> activeTextures = new Dictionary<uint, Texture2D>();
 
-        public M2Handler(GameObject parent) => m2Parent = parent;
-        
         public void Update()
         {
             if (M2Data.EnqueuedModels.Count > 0)
             {
-                if (M2Data.EnqueuedModels.TryDequeue(out var model))
-                    CreateM2Object(model);
+                if (!M2Loader.Working && M2Data.EnqueuedModels.TryDequeue(out var model))
+                {
+                    if (!World.LoadedM2s.ContainsKey(model.FileDataId))
+                    {
+                        World.LoadedM2s.Add(model.FileDataId, null);
+                        CreateM2Object(model, model.Parent);
+                    }
+                    else
+                        CloneM2Object(model);
+                }
+            }
+
+            if (M2Data.EnqueuedCloneModels.Count > 0)
+            {
+                if (!M2Data.EnqueuedCloneModels.TryDequeue(out var model))
+                    throw new Exception("Something went wrong!");
+
+                if (World.LoadedM2s[model.FileDataId] == null)
+                    throw new Exception($"{model.FileDataId} has no existing GameObject");
+                
+                var instance = Instantiate(World.LoadedM2s[model.FileDataId]);
+                instance.transform.position = model.Position;
+                instance.transform.rotation = model.Rotation;
+                instance.transform.localScale = model.Scale;
+                instance.transform.SetParent(model.Parent.transform);
             }
         }
 
-        public void CreateM2Object(M2Model model)
+        /// <summary>
+        /// Create the M2 Mesh and <see cref="GameObject"/>.
+        /// </summary>
+        /// <param name="model">The <see cref="M2Model"/> instance</param>
+        /// <param name="parent">The <see cref="GameObject"/> parent</param>
+        public void CreateM2Object(M2Model model, GameObject parent = null)
         {
             var m2Object = new GameObject();
-            m2Object.name = GuiConstants.IsInModelPreview ? "activeModel" : model.ModelName;
-            m2Object.transform.SetParent(m2Parent.transform);
+            m2Object.transform.SetParent(parent != null ? parent.transform : M2Parent.transform);
+
+            World.LoadedM2s[model.FileDataId] = m2Object;
+            World.LoadedM2s[model.FileDataId].name = model.ModelName;
 
             // Bones
             var m2Bone = new GameObject();
@@ -55,7 +83,7 @@ namespace World.Model
             for (var i = 0; i < model.Submeshes.Count; ++i)
             {
                 mesh.SetTriangles(model.Submeshes[i].Triangles, i, true);
-                materials[i] = new Material(Shader.Find("WowModelViewer/WMO/S_Diffuse"));
+                materials[i] = new Material(Shader.Find("Shader Graphs/ModelShader"));
 
                 var skinSectionIndex = model.BatchIndices[i].SkinSectionId;
                 var textureFileDataId = model.Textures[model.TextureLookupTable[model.BatchIndices[skinSectionIndex].TextureComboIndex]].FileDataId;
@@ -72,16 +100,24 @@ namespace World.Model
                         activeTextures[textureFileDataId] = texture;
                     }
                     
-                    materials[i].SetTexture("_MainTex", activeTextures[textureFileDataId]);
+                    materials[i].SetTexture("_baseMap", activeTextures[textureFileDataId]);
                 }
             }
             meshRenderer.materials = materials;
 
-            if (GuiConstants.IsInModelPreview)
-            {
-                var camera = GameObject.Find("Main Camera").GetComponent<Camera>();
-                camera.transform.LookAt(m2Object.transform);
-            }
+            World.LoadedM2s[model.FileDataId].transform.position = model.Position;
+            World.LoadedM2s[model.FileDataId].transform.rotation = model.Rotation;
+            World.LoadedM2s[model.FileDataId].transform.localScale = model.Scale;
+        }
+
+
+        /// <summary>
+        /// Clone the generated M2 <see cref="GameObject"/>.
+        /// </summary>
+        /// <param name="model"></param>
+        public void CloneM2Object(M2Model model)
+        {
+            M2Data.EnqueuedCloneModels.Enqueue(model);
         }
     }
 }

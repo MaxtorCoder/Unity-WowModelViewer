@@ -74,6 +74,9 @@ namespace GUI
 
         private void OnOpenStorage()
         {
+            // Clear LocalBranch Options.
+            LocalBranch.options.Clear();
+
             var paths = StandaloneFileBrowser.OpenFolderPanel("Select WoW Folder", "", false);
             foreach (var path in paths)
             {

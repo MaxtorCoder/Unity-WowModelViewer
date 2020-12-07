@@ -111,7 +111,7 @@ public class BLP
 
         var textureData = new TextureData();
         var blp = new BLP();
-        var blpData = blp.GetUncompressed(stream, true);
+        var blpData = blp.GetUncompressed(stream);
         var blpInfo = blp.GetInfo();
 
         textureData.HasMipmaps = blpInfo.hasMipmaps;
@@ -119,9 +119,6 @@ public class BLP
         textureData.Height = blpInfo.height;
         textureData.RawData = blpData;
         textureData.TextureFormat = blpInfo.textureFormat;
-
-        if (textureData.Width != textureData.Height)
-            textureData.HasMipmaps = false;
 
         return textureData;
     }

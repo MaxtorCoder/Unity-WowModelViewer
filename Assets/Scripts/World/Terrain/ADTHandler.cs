@@ -1,159 +1,141 @@
 using Constants;
 using IO.ADT;
-using IO.ADT.MapTextures;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using World.Model;
 
 namespace World.Terrain
 {
-    public class ADTHandler
+    public class ADTHandler : MonoBehaviour
     {
-        private GameObject adtParent;
-        private GameObject chunkPrefab;
+        public GameObject ADTParent;
+        public GameObject ChunkPrefab;
 
-        private Dictionary<uint, Texture2D> activeDiffuseTextures = new Dictionary<uint, Texture2D>();
-        private Dictionary<uint, Texture2D> activeHeightTextures = new Dictionary<uint, Texture2D>();
+        public WorldLoader World;
+        public M2Handler DoodadHandler;
 
-        public ADTHandler(GameObject adtParent, GameObject chunkPrefab)
-        {
-            this.chunkPrefab = chunkPrefab;
-            this.adtParent = adtParent;
-        }
+        private bool isWorking;
 
+        /// <summary>
+        /// Update the ADTHandler thread and Dequeue all enqueued ADTs.
+        /// </summary>
         public void Update()
         {
-            if (ADTData.EnqueuedADTs.TryDequeue(out var adtModel))
+            if (!isWorking && ADTData.EnqueuedADTs.TryDequeue(out var adtModel))
+            {
+                isWorking = true;
                 CreateADTBlock(adtModel);
+                isWorking = false;
+
+                // CreateDoodadInstances(adtModel);
+            }
         }
 
+        /// <summary>
+        /// Create the ADT block with textures.
+        /// </summary>
         public void CreateADTBlock(ADTModel model)
         {
             var adtObject = new GameObject();
             adtObject.name = $"{model.MapId}_{model.X}_{model.Y}";
-            adtObject.transform.SetParent(adtParent.transform);
+            adtObject.transform.SetParent(ADTParent.transform);
 
             var adtMesh = new GameObject();
             adtMesh.name = "mesh";
-            adtMesh.transform.position = Vector3.zero;
-            adtMesh.transform.rotation = Quaternion.identity;
             adtMesh.transform.SetParent(adtObject.transform);
 
-            if (!MapTexture.EnqueuedMapTextures.TryDequeue(out var mapBlock))
-                return;
-
-            var adtStartX = model.MCNKs[0].MeshPosition.x;
-            var adtStartY = model.MCNKs[0].MeshPosition.y;
-            var initialChunkX = adtStartX + model.MCNKs[0].IndexX * WorldConstants.ChunkSize * -1;
-            var initialChunkY = adtStartY + model.MCNKs[0].IndexY * WorldConstants.ChunkSize * -1;
-
             var chunkIndex = 0;
-            var gobs = new List<GameObject>();
-            for (var x = 0; x < 16; ++x)
+            for (var x = 0; x < 256; ++x)
             {
-                for (var y = 0; y < 16; ++y)
+                var mcnkChunk = model.MCNKs[chunkIndex];
+
+                GameObject chunk = GameObject.Instantiate(ChunkPrefab, adtMesh.transform, true);
+                chunk.isStatic = true;
+                chunk.name = $"chunk_{chunkIndex}";
+                chunk.transform.position = mcnkChunk.MeshPosition;
+
+                var mesh = new Mesh
                 {
-                    var mcnkChunk = model.MCNKs[chunkIndex];
+                    vertices    = mcnkChunk.VertexArray,
+                    triangles   = mcnkChunk.TriangleArray,
+                    normals     = mcnkChunk.Normals,
+                    uv          = mcnkChunk.UVs
+                };
 
-                    var genX = (initialChunkX + (WorldConstants.ChunkSize * x) * -1);
-                    var genY = (initialChunkY + (WorldConstants.ChunkSize * y) * -1);
+                if (model.TexMCNKs[chunkIndex].TextureIds.Length != 0)
+                {
+                    var fileDataId = model.TextureFileDataId[(int)model.TexMCNKs[chunkIndex].TextureIds[0]];
+                    var textureData = model.TextureDatas[fileDataId];
 
-                    var verticeList = new List<Vector3>();
-                    var normalsList = new List<Vector3>();
-                    var uvList = new List<Vector2>();
+                    var texture = new Texture2D(textureData.Width, textureData.Height, textureData.TextureFormat, textureData.HasMipmaps);
+                    texture.LoadRawTextureData(textureData.RawData);
+                    texture.Apply();
 
-                    for (uint i = 0, index = 0; i < 17u; ++i)
+                    var material = new Material(Shader.Find("Shader Graphs/WowShader"));
+                    material.SetTexture($"_layer0", texture);
+
+                    for (var i = 1; i < model.TexMCNKs[chunkIndex].LayerCount; ++i)
                     {
-                        var isSmallRow = i % 2 != 0;
-                        var rowLength = isSmallRow ? 8 : 9;
+                        if (model.TexMCNKs[chunkIndex].AlphaLayers == null)
+                            continue;
 
-                        for (var j = 0; j < rowLength; ++j)
-                        {
-                            normalsList.Add(new Vector3(
-                                -mcnkChunk.Normals[index].x / 127.0f,
-                                mcnkChunk.Normals[index].z / 127.0f,
-                                mcnkChunk.Normals[index].y / 127.0f));
+                        var alphaWorker = new Texture2D(64, 64, TextureFormat.Alpha8, false);
+                        alphaWorker.LoadRawTextureData(model.TexMCNKs[chunkIndex].AlphaLayers[i].Layer);
+                        alphaWorker.Apply();
+                        alphaWorker.wrapMode = TextureWrapMode.Clamp;
 
-                            var X = genY - (j * WorldConstants.UnitSize);
-                            var Y = mcnkChunk.Vertices[index++] + mcnkChunk.MeshPosition.z;
-                            var Z = genX - (i * WorldConstants.UnitSizeHalf);
+                        fileDataId = model.TextureFileDataId[(int)model.TexMCNKs[chunkIndex].TextureIds[i]];
+                        textureData = model.TextureDatas[fileDataId];
 
-                            var verticeVector = new Vector3(X * -1, Y, Z);
-                            if (isSmallRow)
-                                verticeVector.x = X - WorldConstants.UnitSizeHalf;
+                        texture = new Texture2D(textureData.Width, textureData.Height, textureData.TextureFormat, textureData.HasMipmaps);
+                        texture.LoadRawTextureData(textureData.RawData);
+                        texture.Apply();
 
-                            verticeList.Add(verticeVector);
-
-                            var texX = -(verticeVector.x - initialChunkY) / WorldConstants.TileSize;
-                            var texY = -(verticeVector.z - initialChunkX) / WorldConstants.TileSize;
-                            uvList.Add(new Vector2(texX, texY));
-                        }
+                        material.SetTexture($"_layer{i}", texture);
+                        material.SetTexture($"_blend{i}", alphaWorker);
                     }
 
-                    var indiceList = new List<int>();
-                    for (int i = 9; i < 145; ++i)
+                    chunk.GetComponent<MeshRenderer>().material = material;
+                }
+
+                chunk.GetComponent<MeshFilter>().sharedMesh = mesh;
+                chunk.GetComponent<MeshCollider>().sharedMesh = mesh;
+                chunkIndex++;
+            }
+        }
+
+        /// <summary>
+        /// Parse all Doodad instances and render them onto the ADT
+        /// </summary>
+        public void CreateDoodadInstances(ADTModel model)
+        {
+            var parent = GameObject.Find($"{model.MapId}_{model.X}_{model.Y}");
+            if (parent == null)
+                throw new Exception($"Parent cannot be found: '{model.MapId}_{model.X}_{model.Y}'");
+
+            var doodadParent = new GameObject("doodads");
+            doodadParent.transform.position = new Vector3((32 - model.Y) * WorldConstants.BlockSize, 0, (32 - model.X) * WorldConstants.BlockSize);
+            doodadParent.transform.SetParent(parent.transform);
+
+            //foreach (var doodad in model.DoodadInstances.Values)
+            for (var i = 0; i < 5; ++i)
+            {
+                var doodad = model.DoodadInstances.Values.ToList()[i];
+                if (!World.LoadedUniqueIds.Contains(doodad.UniqueId))
+                {
+                    World.LoadedUniqueIds.Add(doodad.UniqueId);
+                    M2Loader.EnqueueDoodad(new M2QueueItem
                     {
-                        // Triangles
-                        // indiceList.AddRange(new int[] { i + 8, i - 9, i - 8 });
-                        // indiceList.AddRange(new int[] { i - 9, i - 8, i + 9 });
-                        // indiceList.AddRange(new int[] { i - 8, i + 9, i + 8 });
-                        // indiceList.AddRange(new int[] { i + 9, i + 8, i - 9 });
-
-                        indiceList.AddRange(new int[] { i + 8, i - 9, i - 8 });
-                        indiceList.AddRange(new int[] { i - 8, i + 9, i + 8 });
-
-                        if ((i + 1) % (9 + 8) == 0)
-                            i += 9;
-                    }
-
-                    mcnkChunk.VertexArray = verticeList.ToArray();
-                    mcnkChunk.Normals = normalsList.ToArray();
-                    mcnkChunk.UVs = uvList.ToArray();
-                    mcnkChunk.TriangleArray = indiceList.ToArray();
-
-                    GameObject chunk = GameObject.Instantiate(chunkPrefab, adtMesh.transform, true);
-                    chunk.isStatic = true;
-                    chunk.name = $"chunk_{chunkIndex++}";
-
-                    var mesh = new Mesh();
-                    mesh.vertices = mcnkChunk.VertexArray;
-                    mesh.triangles = mcnkChunk.TriangleArray;
-                    mesh.normals = mcnkChunk.Normals;
-                    mesh.uv = mcnkChunk.UVs;
-
-                    chunk.GetComponent<MeshFilter>().sharedMesh = mesh;
-                    chunk.GetComponent<MeshCollider>().sharedMesh = mesh;
-
-                    gobs.Add(chunk);
-                    GameObject.Destroy(chunk);
+                        FileDataId  = doodad.FileDataId,
+                        AdtParent   = doodadParent,
+                        Position    = doodad.Position,
+                        Rotation    = doodad.Rotation,
+                        Scale       = new Vector3(doodad.Scale, doodad.Scale, doodad.Scale),
+                        UniqueId    = doodad.UniqueId
+                    });
                 }
             }
-
-            var combinedMeshes = new CombineInstance[gobs.Count];
-            for (var i = 0; i < gobs.Count; ++i)
-            {
-                combinedMeshes[i].mesh      = gobs[i].GetComponent<MeshFilter>().sharedMesh;
-                combinedMeshes[i].transform = gobs[i].GetComponent<MeshFilter>().transform.localToWorldMatrix;
-            }
-
-            var mainMesh = new Mesh();
-            mainMesh.CombineMeshes(combinedMeshes);
-
-            var mainChunk = GameObject.Instantiate(chunkPrefab, adtMesh.transform, true);
-            mainChunk.name = "mainChunk";
-            mainChunk.GetComponent<MeshFilter>().sharedMesh = mainMesh;
-            mainChunk.GetComponent<MeshCollider>().sharedMesh = mainMesh;
-
-            var lowTexture = new Texture2D(mapBlock.Data.Width, mapBlock.Data.Height, mapBlock.Data.TextureFormat, false);
-            lowTexture.LoadRawTextureData(mapBlock.Data.RawData);
-            lowTexture.Apply();
-            lowTexture.wrapMode = TextureWrapMode.Clamp;
-
-            var lowMaterial = new Material(Shader.Find("Shader Graphs/WowShader"));
-            lowMaterial.SetTexture("_layer0", lowTexture);
-
-            if (model.X == mapBlock.Coords.x && model.Y == mapBlock.Coords.y)
-                mainChunk.GetComponent<MeshRenderer>().material = lowMaterial;
         }
     }
 }

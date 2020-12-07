@@ -23,12 +23,30 @@ namespace Util
 
         public static uint Flip(this uint n) => (n << 24) | (((n >> 16) << 24) >> 16) | (((n << 16) >> 24) << 16) | (n >> 24);
         
-        public static float NormalizeValue(this BinaryReader reader, float value)
+        public static float NormalizeValue(this float value)
         {
             return 2 * (value / 254) - 1;
         }
+
+        public static int NormalizeHalfResAlphaPixel(this BinaryReader reader, int value)
+        {
+            return value * 255 / 15;
+        }
+
+        public static int BoolArrayToInt(this BinaryReader reader, bool[] bits)
+        {
+            uint r = 0;
+            for (int i = 0; i < bits.Length; i++)
+            {
+                if (bits[i])
+                {
+                    r |= (uint)(1 << (bits.Length - i));
+                }
+            }
+            return (int)(r / 2);
+        }
         #endregion
-        
+
         #region Unity Editor Extensions
         public static GameObject FindObject(this GameObject parent, string name)
         {
@@ -45,17 +63,6 @@ namespace Util
         
         #region Misc Extensions
 
-        public static float NormalizeFloat(this float value)
-        {
-            var calcVal = value;
-            if (calcVal <= 0)
-                calcVal += 1;
-            else if (calcVal > 0)
-                calcVal = (1 - calcVal) * -1;
-
-            return calcVal;
-        }
-        
         #endregion
     }
 }

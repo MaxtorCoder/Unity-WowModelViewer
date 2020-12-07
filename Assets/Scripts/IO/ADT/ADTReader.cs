@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Casc;
 using Constants;
-using UnityEngine;
 using Util;
 
 namespace IO.ADT
@@ -80,20 +75,34 @@ namespace IO.ADT
         }
 
         /// <summary>
-        /// Load the height textures.
+        /// Read the Obj0.adt format.
         /// </summary>
-        public static void LoadHeightTextures(ADTModel model)
+        /// <param name="fileDataId"></param>
+        /// <param name="model"></param>
+        public static void ReadObjADT(uint fileDataId, ADTModel model)
         {
-            if (!model.HasMTXP)
+            var stream = CASC.OpenFile(fileDataId);
+            if (stream == null)
                 return;
 
-            foreach (var textureFileDataId in model.TextureFileDataId)
+            using (var reader = new BinaryReader(stream))
             {
-                var textureData = BLP.Open(textureFileDataId);
-                if (textureData == null)
-                    continue;
+                while (reader.BaseStream.Position < reader.BaseStream.Length)
+                {
+                    var chunkId = (Chunks)reader.ReadUInt32();
+                    var chunkSize = reader.ReadUInt32();
 
-                model.TerrainHeightTextures.Add(textureFileDataId, textureData);
+                    switch (chunkId)
+                    {
+                        case Chunks.MDDF:   // Doodad Instances
+                            ReadMDDF(reader, chunkSize, model);
+                            break;
+                        default:
+                            reader.Skip(chunkSize);
+                            // Debug.Log($"ADTOBJ: Skipping {chunkId} (0x{chunkId:X}) with size: {chunkSize}..");
+                            break;
+                    }
+                }
             }
         }
     }

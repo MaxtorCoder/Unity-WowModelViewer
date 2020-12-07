@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Casc;
 using Constants;
-using IO.Shared;
 using UnityEngine;
 using Util;
 
@@ -16,6 +14,9 @@ namespace IO.M2
         
         public static void ReadMD20(BinaryReader reader, M2Model model)
         {
+            SkinFileIds.Clear();
+            TextureFileIds.Clear();
+
             var magic = reader.ReadUInt32().Flip();
             if (magic != (uint) Chunks.MD20)
                 throw new Exception($"{model.FileDataId} has invalid MD20 magic! {magic:X}");

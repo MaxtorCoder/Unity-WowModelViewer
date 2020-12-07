@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using Casc;
 using Constants;
 using IO.M2;
@@ -29,7 +27,7 @@ namespace IO.SKIN
                 var bones           = reader.ReadM2Array();
                 var submeshes       = reader.ReadM2Array();
                 var batches         = reader.ReadM2Array();
-                var boneCountMax       = reader.ReadUInt32();
+                var boneCountMax    = reader.ReadUInt32();
                 var shadowBatches   = reader.ReadM2Array();
                 
                 // Read Triangles
@@ -93,20 +91,20 @@ namespace IO.SKIN
                     submesh.Normals = new Vector3[submesh.VertexCount];
                     submesh.UVs = new Vector2[submesh.VertexCount];
                     submesh.UV2s = new Vector2[submesh.VertexCount];
-                    
-                    Parallel.For(0, submesh.VertexCount, j =>
+
+                    for (var j = 0; j < submesh.VertexCount; ++j)
                     {
                         submesh.Vertices[j]    = model.MeshData.Vertices[j + submesh.VertexStart];
                         submesh.Normals[j]     = model.MeshData.Normals[j + submesh.VertexStart];
                         submesh.UVs[j]         = model.MeshData.TexCoords[j + submesh.VertexStart];
                         submesh.UV2s[j]        = model.MeshData.TexCoords2[j + submesh.VertexStart];
-                    });
+                    }
                     
                     submesh.Triangles = new int[submesh.TriangleCount];
-                    Parallel.For(0, submesh.TriangleCount, j =>
+                    for (var j = 0; j < submesh.TriangleCount; ++j)
                     { 
                         submesh.Triangles[j] = triangleList[j + submesh.TriangleStart];
-                    });
+                    }
                     
                     model.Submeshes.Add(submesh);
                 }

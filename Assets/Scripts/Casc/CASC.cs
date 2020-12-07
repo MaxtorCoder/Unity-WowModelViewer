@@ -18,10 +18,10 @@ namespace Casc
         public static void Initialize(ModelViewerConfig config, GameObject loadScreen)
         {
             loadingScreen = loadScreen;
-            
+
             var progressBar = loadingScreen.GetComponentInChildren<ProgressBar>();
             progressBar.SetStatus("Initializing CASC Storage", 0);
-            
+
             cascWorker = new BackgroundWorker { WorkerReportsProgress = true };
             cascWorker.DoWork += CascWorkerOnDoWork;
             cascWorker.ProgressChanged += CascWorkerOnProgressChanged;
@@ -43,11 +43,11 @@ namespace Casc
         private static void CascWorkerOnDoWork(object sender, DoWorkEventArgs e)
         {
             var config = (ModelViewerConfig) e.Argument;
-            
+
             cascHandler = config.LoadType == CascLoadType.Online
                 ? CASCHandler.OpenOnlineStorage(cascWorker, config.OnlineBranch)
                 : CASCHandler.OpenLocalStorage(cascWorker, config.LocalStorage, config.LocalBranch);
-            
+
             cascWorker.ReportProgress(0, "Setting flags...");
             cascHandler.Root.SetFlags(LocaleFlags.enUS);
         }
@@ -56,21 +56,21 @@ namespace Casc
         {
             if (!Directory.Exists("Cache"))
                 Directory.CreateDirectory("Cache");
-            
+
             if (File.Exists($"Cache/{fileDataId}"))
             {
-                var stream = File.Open($"Cache/{fileDataId}", FileMode.Open);
+                var stream = File.Open($"Cache/{fileDataId}", FileMode.Open, FileAccess.Read, FileShare.Read);
                 return stream;
             }
             else if (cascHandler.FileExists((int) fileDataId))
             {
                 var stream = cascHandler.OpenFile((int) fileDataId);
                 var buffer = new byte[stream.Length];
-                
+
                 // Read the data and save the file.
                 stream.Read(buffer, 0, buffer.Length);                
                 File.WriteAllBytes($"Cache/{fileDataId}", buffer);
-                
+
                 stream.Position = 0;
                 return stream;
             }

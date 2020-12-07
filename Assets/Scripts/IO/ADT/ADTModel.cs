@@ -1,4 +1,5 @@
-﻿using IO.Shared;
+﻿using Assets.Scripts.Constants;
+using IO.Shared;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace IO.ADT
         public uint Y;
         public uint MapId;
         public uint FileDataId;
+        public uint WdtFileDataId;
 
         public bool HasMTXP = false;
 
@@ -25,10 +27,8 @@ namespace IO.ADT
         public List<uint> TextureFileDataId = new List<uint>();
         public Dictionary<uint, TextureData> TextureDatas = new Dictionary<uint, TextureData>();
 
-        public Dictionary<uint, uint> TextureFlags = new Dictionary<uint, uint>();
-        public Dictionary<uint, float> HeightScales = new Dictionary<uint, float>();
-        public Dictionary<uint, float> HeightOffsets = new Dictionary<uint, float>();
-        public Dictionary<uint, TextureData> TerrainHeightTextures = new Dictionary<uint, TextureData>();
+        // Store Doodads and WMOs by UniqueId.
+        public Dictionary<int, MDDF> DoodadInstances = new Dictionary<int, MDDF>();
     }
 
     public class MCNKChunk
@@ -54,5 +54,21 @@ namespace IO.ADT
         public uint[] TextureIds;
         public uint[] LayerOffsetInMCAL;
         public bool[] AlphaMapCompressed;
+        public MCAL[] AlphaLayers;
+    }
+
+    public class MCAL
+    {
+        public byte[] Layer;
+    }
+
+    public class MDDF
+    {
+        public uint FileDataId;
+        public int UniqueId;
+        public Vector3 Position;
+        public Quaternion Rotation;
+        public float Scale;
+        public MDDFFlags Flags;
     }
 }

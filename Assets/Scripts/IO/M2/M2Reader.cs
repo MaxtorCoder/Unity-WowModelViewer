@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using Casc;
 using Constants;
-using UnityEngine;
 using Util;
 
 namespace IO.M2
@@ -37,7 +34,7 @@ namespace IO.M2
                             break;
                         default:
                             reader.Skip(chunkSize);
-                            Debug.Log($"Skipping {chunkId} (0x{chunkId:X}) with size: {chunkSize}..");
+                            // Debug.Log($"Skipping {chunkId} (0x{chunkId:X}) with size: {chunkSize}..");
                             break;
                     }
                 }
